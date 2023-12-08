@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomExtentReport", "CustomExtentReport.csproj", "{236D806D-61C5-4541-B994-25403217A869}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{236D806D-61C5-4541-B994-25403217A869}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{236D806D-61C5-4541-B994-25403217A869}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{236D806D-61C5-4541-B994-25403217A869}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{236D806D-61C5-4541-B994-25403217A869}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BF5F598D-E9AA-4469-86AE-CCBBC3B9DC0D}
+	EndGlobalSection
+EndGlobal
