@@ -30,7 +30,7 @@ namespace CustomExtentReport.Mail
                     GetHtmlText();
                     Send();
                     ClearLine();
-                    WriteColoredLine("Mail Sent Successfully", ConsoleColor.Green);
+                    WriteColoredLine("Mail Sent Successfully\r\n", ConsoleColor.Green);
                 }
                 catch (Exception e)
                 {
