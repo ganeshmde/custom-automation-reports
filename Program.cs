@@ -6,7 +6,7 @@ class Program
     {
         var extent = new Extent();
         extent.GenerateReport();
-        new Mail(extent.reportsDirectory, extent.reportPath);
+        new Mail(extent.reportsDirectory, extent.reportPath, extent.testResult);
     }
 
 }
