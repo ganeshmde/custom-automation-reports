@@ -1,4 +1,4 @@
-﻿using AventStack.ExtentReports;
+using AventStack.ExtentReports;
 using AventStack.ExtentReports.Reporter.Config;
 using AventStack.ExtentReports.Reporter;
 using CustomExtentReport.Report.Helpers;
@@ -8,6 +8,7 @@ using AventStack.ExtentReports.Gherkin.Model;
 using AventStack.ExtentReports.Model;
 using System.Globalization;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CustomExtentReport.Report
 {
@@ -15,9 +16,11 @@ namespace CustomExtentReport.Report
     {
         ExtentReports extent;
         List<TestFeature> features;
+        public TestResult testResult;
         string allureResultsDirectory;
         public string reportPath, reportsDirectory;
         bool stopProgress = false;
+
         public Extent()
         {
             allureResultsDirectory = ConfigurationManager.AppSettings.Get("allure-results");
@@ -60,7 +63,7 @@ namespace CustomExtentReport.Report
         {
             try
             {
-                new CustomizeReport(features, reportPath).Customize();
+                new CustomizeReport(features, reportPath).Customize(out testResult);
             }
             catch (Exception e)
             {
@@ -176,7 +179,8 @@ namespace CustomExtentReport.Report
         #region Report Setup
         void ImplementReport()
         {
-            reportsDirectory = Directory.GetCurrentDirectory() + "\\reports\\";
+            string projectPath = new Uri(Path.GetDirectoryName(Assembly.GetCallingAssembly().CodeBase)).LocalPath;
+            reportsDirectory = projectPath + "\\reports\\";
             Directory.CreateDirectory(reportsDirectory);
             var sparkReporter = new ExtentSparkReporter(reportsDirectory + "index.html");
             extent = new ExtentReports();
