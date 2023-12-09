@@ -113,12 +113,6 @@ namespace CustomExtentReport.Mail
             string htmlPath = projectDir + "Mail\\message.html";
             HtmlDocument html = new HtmlDocument();
             html.Load(htmlPath);
-
-            //Change header
-            var build = ConfigurationManager.AppSettings.Get("build");
-            var header = html.DocumentNode.SelectSingleNode("//h3");
-            header.InnerHtml += " - " + build;
-
             var tableRows = html.DocumentNode.SelectNodes("//tr");
 
             //Add test result
