@@ -1,4 +1,4 @@
-﻿using CustomExtentReport.Report.Models;
+using CustomExtentReport.Report.Models;
 using HtmlAgilityPack;
 
 namespace CustomExtentReport.Report.Helpers
@@ -7,14 +7,17 @@ namespace CustomExtentReport.Report.Helpers
     {
         HtmlDocument html;
         List<TestFeature> features;
+        TestResult testResult;
         string reportPath;
         double passPercent = 0.00;
+
         public CustomizeReport(List<TestFeature> _features, string _reportPath)
         {
             html = new HtmlDocument();
             html.Load(_reportPath);
             features = _features;
             reportPath = _reportPath;
+            testResult = new TestResult();
         }
 
         #region Helper Functions
@@ -65,7 +68,7 @@ namespace CustomExtentReport.Report.Helpers
 
         #region Customize generated report
 
-        public void Customize()
+        public void Customize(out TestResult _result)
         {
             var testItems = html.DocumentNode.SelectNodes("//li[@class='test-item']").ToArray();
             for (int i = 0; i < testItems.Length; i++)
@@ -81,6 +84,7 @@ namespace CustomExtentReport.Report.Helpers
             ChangeDashboardResults();
             ChangeReportTimeline();
             html.Save(reportPath);
+            _result = testResult;
         }
 
         void ChangeTimeInFeatureInfo(HtmlNode detail, HtmlNode info, TestFeature feature)
@@ -250,7 +254,9 @@ namespace CustomExtentReport.Report.Helpers
             durationTimeNode.SetAttributeValue("class", "m-b-0");
             var header1 = cards[2].SelectSingleNode("descendant::h3");
             header1.SetAttributeValue("style", "color: cornflowerblue;");
-            header1.InnerHtml = GetDuration(startTime, endTime);
+            string duration = GetDuration(startTime, endTime);
+            header1.InnerHtml = duration;
+            testResult.Duration = duration;
 
             //Add percent
             var PercentNode = cards[3].SelectSingleNode("descendant::p");
@@ -293,6 +299,9 @@ namespace CustomExtentReport.Report.Helpers
             int passedScenarios = totalScenarios - rerunScenarios - failedScenarios;
             passPercent = (passedScenarios * 100.00) / (passedScenarios + failedScenarios);
             passPercent = Math.Round(passPercent, 2);
+            testResult.PassPercent = passPercent;
+            testResult.FailedScenarios = failedScenarios;
+            testResult.TotalScenarios = passedScenarios + failedScenarios;
             scenariosCountNode[0].InnerHtml = passedScenarios.ToString();
             scenariosCountNode[1].InnerHtml = failedScenarios.ToString();
         }
