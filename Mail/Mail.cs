@@ -1,6 +1,9 @@
-﻿using System.Configuration;
+using CustomExtentReport.Report.Models;
+using HtmlAgilityPack;
+using System.Configuration;
 using System.IO.Compression;
 using System.Net.Mail;
+using System.Reflection;
 
 namespace CustomExtentReport.Mail
 {
@@ -8,20 +11,51 @@ namespace CustomExtentReport.Mail
     {
         SmtpClient smtp;
         MailMessage msg;
+        TestResult testResult;
         string reportPath, reportsDirectory;
 
-        public Mail(string _reportsDirectoy, string _reportPath)
+        public Mail(string _reportsDirectoy, string _reportPath, TestResult _testResult)
         {
             bool.TryParse(ConfigurationManager.AppSettings.Get("send-mail"), out bool sendMail);
             if (sendMail)
             {
+                WriteColoredLine("Sending mail...", ConsoleColor.DarkYellow);
                 smtp = new SmtpClient();
                 msg = new MailMessage();
                 reportPath = _reportPath;
                 reportsDirectory = _reportsDirectoy;
-                Send();
+                testResult = _testResult;
+                try
+                {
+                    GetHtmlText();
+                    Send();
+                    ClearLine();
+                    WriteColoredLine("Mail Sent Successfully", ConsoleColor.Green);
+                }
+                catch (Exception e)
+                {
+                    ClearLine();
+                    Console.WriteLine("Failed to send mail:");
+                    WriteColoredLine(e.Message, ConsoleColor.Green);
+                }
             }
         }
+
+        void WriteColoredLine(string text, ConsoleColor color, bool resetColor = true)
+        {
+            Console.ForegroundColor = color;
+            Console.Write(text);
+            if (resetColor)
+            {
+                Console.ResetColor();
+            }
+        }
+
+        void ClearLine()
+        {
+            do { Console.Write("\b \b"); } while (Console.CursorLeft > 0);
+        }
+
 
         void SetSmtpClient(string host, string mailId, string pwd)
         {
@@ -34,7 +68,8 @@ namespace CustomExtentReport.Mail
         void SetMailMessage(string mailId, string[] recipients, string reportPath)
         {
             msg.Subject = "Automation testcases result";
-            msg.Body = "Hi team, \r\nAutomation test suite run completed. Please view the attached report";
+            msg.IsBodyHtml = true;
+            msg.Body = GetHtmlText();
             msg.From = new MailAddress(mailId);
             AttachReportAsZipFile();
             foreach (var r in recipients)
@@ -69,6 +104,30 @@ namespace CustomExtentReport.Mail
             smtp.Send(msg);
             msg.Dispose();
             smtp.Dispose();
+        }
+
+        string GetHtmlText()
+        {
+            string solutionPath = new Uri(Path.GetDirectoryName(Assembly.GetCallingAssembly().CodeBase)).LocalPath;
+            string projectDir = solutionPath.Remove(solutionPath.IndexOf("bin"));
+            string htmlPath = projectDir + "Mail\\message.html";
+            HtmlDocument html = new HtmlDocument();
+            html.Load(htmlPath);
+
+            //Change header
+            var build = ConfigurationManager.AppSettings.Get("build");
+            var header = html.DocumentNode.SelectSingleNode("//h3");
+            header.InnerHtml += " - " + build;
+
+            var tableRows = html.DocumentNode.SelectNodes("//tr");
+
+            //Add test result
+            tableRows[0].SelectNodes("child::td")[1].InnerHtml = testResult.TotalScenarios.ToString();
+            tableRows[1].SelectNodes("child::td")[1].InnerHtml = testResult.FailedScenarios.ToString();
+            tableRows[2].SelectNodes("child::td")[1].InnerHtml = testResult.PassPercent.ToString() + "%";
+            tableRows[3].SelectNodes("child::td")[1].InnerHtml = testResult.Duration;
+
+            return html.DocumentNode.InnerHtml;
         }
     }
 }
