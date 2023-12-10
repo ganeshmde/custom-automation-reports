@@ -101,7 +101,7 @@ namespace CustomExtentReport.Report
                     for (int i = 0; i <= time && (!stopProgress); i++)
                     {
                         progress.Report((double)i / time);
-                        Thread.Sleep(50);
+                        Thread.Sleep(20);
                         if (features != default && !isSet)
                         {
                             time += features.Count();
