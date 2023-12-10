@@ -36,7 +36,7 @@ namespace CustomExtentReport.Mail
                 {
                     ClearLine();
                     Console.WriteLine("Failed to send mail:");
-                    WriteColoredLine(e.Message, ConsoleColor.Green);
+                    WriteColoredLine(e.Message, ConsoleColor.DarkRed);
                 }
             }
         }
