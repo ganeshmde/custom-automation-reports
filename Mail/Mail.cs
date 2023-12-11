@@ -119,6 +119,7 @@ namespace CustomExtentReport.Mail
             tableRows[1].SelectNodes("child::td")[1].InnerHtml = testResult.FailedScenarios.ToString();
             tableRows[2].SelectNodes("child::td")[1].InnerHtml = testResult.PassPercent.ToString() + "%";
             tableRows[3].SelectNodes("child::td")[1].InnerHtml = testResult.Duration;
+            tableRows[4].SelectNodes("child::td")[1].InnerHtml = DateTime.Now.ToShortDateString().Split(" ")[0];
 
             return html.DocumentNode.InnerHtml;
         }
