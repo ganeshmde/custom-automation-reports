@@ -272,26 +272,57 @@ namespace CustomExtentReport.Report.Helpers
 
         void ChangeTestRunResults()
         {
-            var cards = html.DocumentNode.SelectNodes("//div[@class='col-md-4']");
-            ChangeFeatureResults(cards[0]);
-            ChangeScenarioResults(cards[1]);
+            var row = html.DocumentNode.SelectNodes("//div[@class='row']").ElementAt(1);
+            var featuresResult = GetFeatureResultsNode();
+            var scenariosResult = GetScenarioResultsNode();
+            row.InnerHtml = "";
+            row.AppendChild(featuresResult);
+            row.AppendChild(scenariosResult);
         }
 
-        void ChangeFeatureResults(HtmlNode card)
+        HtmlNode GetFeatureResultsNode()
         {
-            var featuresCountNode = card.SelectNodes("descendant::b");
+            //Results calculation
+            var featuresCountNode = html.DocumentNode.SelectNodes("//div[@class='col-md-4'][1]//b");
             int totalFeatures = features.Count();
             int rerunFeatures = features.Where(x => x.Name.Contains("Rerun")).Count();
             int totalFailedFeatures = Int32.Parse(featuresCountNode[1].InnerText);
             int failedFeatures = totalFailedFeatures - rerunFeatures;
             int passedFeatures = totalFeatures - rerunFeatures - failedFeatures;
-            featuresCountNode[0].InnerHtml = passedFeatures.ToString();
-            featuresCountNode[1].InnerHtml = failedFeatures.ToString();
+
+
+            var newCol = html.DocumentNode.SelectSingleNode("//div[@class='col-md-3']").Clone();
+            var cardBody = newCol.SelectSingleNode("descendant::div[@class='card-body']");
+            var cardTitle = newCol.SelectSingleNode("descendant::p");
+            newCol.SelectSingleNode("descendant::h3").Remove();
+            cardTitle.InnerHtml = "Features";
+
+            //Pass
+            var passDiv = html.CreateElement("div");
+            passDiv.SetAttributeValue("style", "display: flex; justify-content: space-between; align-conten: right");
+            var passEle = html.CreateElement("h3");
+            passEle.InnerHtml = "Pass";
+            var passCount = html.CreateElement("h3");
+            passCount.InnerHtml = passedFeatures.ToString();
+            passCount.SetAttributeValue("class", "text-pass");
+            passDiv.AppendChild(passEle);
+            passDiv.AppendChild(passCount);
+
+            //Fail
+            var failDiv = passDiv.Clone();
+            failDiv.ChildNodes[0].InnerHtml = "Fail";
+            failDiv.ChildNodes[1].InnerHtml = failedFeatures.ToString();
+            failDiv.ChildNodes[1].SetAttributeValue("class", "text-fail");
+
+            cardBody.AppendChild(passDiv);
+            cardBody.AppendChild(failDiv);
+            return newCol;
         }
 
-        void ChangeScenarioResults(HtmlNode card)
+        HtmlNode GetScenarioResultsNode()
         {
-            var scenariosCountNode = card.SelectNodes("descendant::b");
+            //Results calculation
+            var scenariosCountNode = html.DocumentNode.SelectNodes("//div[@class='col-md-4'][2]//b");
             int totalScenarios = features.Sum(x => x.Scenarios.Count);
             int rerunScenarios = features.Where(x => x.Name.Contains("Rerun")).Sum(x => x.Scenarios.Count);
             int totalFailedScenarios = Int32.Parse(scenariosCountNode[1].InnerText);
@@ -302,8 +333,33 @@ namespace CustomExtentReport.Report.Helpers
             testResult.PassPercent = passPercent;
             testResult.FailedScenarios = failedScenarios;
             testResult.TotalScenarios = passedScenarios + failedScenarios;
-            scenariosCountNode[0].InnerHtml = passedScenarios.ToString();
-            scenariosCountNode[1].InnerHtml = failedScenarios.ToString();
+
+            var newCol = html.DocumentNode.SelectSingleNode("//div[@class='col-md-3']").Clone();
+            var cardBody = newCol.SelectSingleNode("descendant::div[@class='card-body']");
+            var cardTitle = newCol.SelectSingleNode("descendant::p");
+            newCol.SelectSingleNode("descendant::h3").Remove();
+            cardTitle.InnerHtml = "Scenarios";
+
+            //Pass
+            var passDiv = html.CreateElement("div");
+            passDiv.SetAttributeValue("style", "display: flex; justify-content: space-between; align-conten: right");
+            var passEle = html.CreateElement("h3");
+            passEle.InnerHtml = "Pass";
+            var passCount = html.CreateElement("h3");
+            passCount.InnerHtml = passedScenarios.ToString();
+            passCount.SetAttributeValue("class", "text-pass");
+            passDiv.AppendChild(passEle);
+            passDiv.AppendChild(passCount);
+
+            //Fail
+            var failDiv = passDiv.Clone();
+            failDiv.ChildNodes[0].InnerHtml = "Fail";
+            failDiv.ChildNodes[1].InnerHtml = failedScenarios.ToString();
+            failDiv.ChildNodes[1].SetAttributeValue("class", "text-fail");
+
+            cardBody.AppendChild(passDiv);
+            cardBody.AppendChild(failDiv);
+            return newCol;
         }
 
         void ChangeReportTimeline()
