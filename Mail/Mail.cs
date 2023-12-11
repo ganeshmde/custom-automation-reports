@@ -27,7 +27,6 @@ namespace CustomExtentReport.Mail
                 testResult = _testResult;
                 try
                 {
-                    GetHtmlText();
                     Send();
                     ClearLine();
                     WriteColoredLine("Mail sent successfully\r\n", ConsoleColor.Green);
