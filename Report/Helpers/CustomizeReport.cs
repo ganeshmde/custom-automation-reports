@@ -6,9 +6,9 @@ namespace CustomExtentReport.Report.Helpers
     public class CustomizeReport
     {
         HtmlDocument html;
-        List<TestFeature> features;
+        readonly List<TestFeature> features;
         TestResult testResult;
-        string reportPath;
+        readonly string reportPath;
         double passPercent = 0.00;
 
         public CustomizeReport(List<TestFeature> _features, string _reportPath)
@@ -212,12 +212,11 @@ namespace CustomExtentReport.Report.Helpers
             newStepNodeParent.InsertAfter(pre, newStepNode);
 
             //Img div
-            HtmlNode imgDiv = null;
+            HtmlNode imgDiv = html.CreateElement("div");
             var base64Img = errorDiv.SelectSingleNode("descendant::a");
             if (base64Img != default)
             {
                 base64Img.ChildNodes[0].InnerHtml = "Screenshot Img";
-                imgDiv = html.CreateElement("div");
                 imgDiv.SetAttributeValue("style", "padding: 12px 0px; margin-left: 35px;");
                 imgDiv.AppendChild(base64Img);
                 newStepNodeParent.InsertAfter(imgDiv, newStepNode);
