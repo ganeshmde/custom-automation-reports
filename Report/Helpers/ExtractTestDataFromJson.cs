@@ -1,4 +1,4 @@
-﻿using CustomExtentReport.Report.Models;
+using CustomExtentReport.Report.Models;
 using Newtonsoft.Json;
 
 namespace CustomExtentReport.Report.Helpers
