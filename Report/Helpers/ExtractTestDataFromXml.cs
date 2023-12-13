@@ -1,4 +1,4 @@
-﻿using CustomExtentReport.Report.Models;
+using CustomExtentReport.Report.Models;
 using System.Xml;
 
 namespace CustomExtentReport.Report.Helpers
@@ -6,6 +6,7 @@ namespace CustomExtentReport.Report.Helpers
     public class ExtractTestDataFromXml
     {
         XmlDocument xmlDoc;
+
         public ExtractTestDataFromXml(string[] _xmlFiles, out List<TestFeature> features)
         {
             xmlDoc = new XmlDocument();
