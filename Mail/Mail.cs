@@ -9,22 +9,23 @@ namespace CustomExtentReport.Mail
 {
     public class Mail
     {
-        SmtpClient smtp;
-        MailMessage msg;
-        TestResult testResult;
-        string reportPath, reportsDirectory;
+        readonly SmtpClient smtp;
+        readonly MailMessage msg;
+        readonly TestResult testResult;
+        readonly string reportPath, reportsDirectory;
 
         public Mail(string _reportsDirectoy, string _reportPath, TestResult _testResult)
         {
+            smtp = new SmtpClient();
+            msg = new MailMessage();
+            reportPath = _reportPath;
+            reportsDirectory = _reportsDirectoy;
+            testResult = _testResult;
             bool.TryParse(ConfigurationManager.AppSettings.Get("send-mail"), out bool sendMail);
+
             if (sendMail)
             {
                 WriteColoredLine("Sending mail...", ConsoleColor.DarkYellow);
-                smtp = new SmtpClient();
-                msg = new MailMessage();
-                reportPath = _reportPath;
-                reportsDirectory = _reportsDirectoy;
-                testResult = _testResult;
                 try
                 {
                     Send();
@@ -38,6 +39,8 @@ namespace CustomExtentReport.Mail
                     WriteColoredLine(e.Message, ConsoleColor.DarkRed);
                 }
             }
+
+            this.reportPath = reportPath;
         }
 
         void WriteColoredLine(string text, ConsoleColor color, bool resetColor = true)
@@ -89,25 +92,9 @@ namespace CustomExtentReport.Mail
             msg.Attachments.Add(attachment);
         }
 
-        void Send()
-        {
-            //SmtpClient setup
-            string host = ConfigurationManager.AppSettings.Get("host");
-            string mailId = ConfigurationManager.AppSettings.Get("mailId");
-            string pwd = ConfigurationManager.AppSettings.Get("pwd");
-            SetSmtpClient(host, mailId, pwd);
-
-            //MailMessage setup
-            string[] recipients = ConfigurationManager.AppSettings.Get("recipients").Split(',');
-            SetMailMessage(mailId, recipients, reportPath);
-            smtp.Send(msg);
-            msg.Dispose();
-            smtp.Dispose();
-        }
-
         string GetHtmlText()
         {
-            string solutionPath = new Uri(Path.GetDirectoryName(Assembly.GetCallingAssembly().CodeBase)).LocalPath;
+            string solutionPath = new Uri(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? "").LocalPath;
             string projectDir = solutionPath.Remove(solutionPath.IndexOf("bin"));
             string htmlPath = projectDir + "Mail\\message.html";
             HtmlDocument html = new HtmlDocument();
@@ -122,6 +109,22 @@ namespace CustomExtentReport.Mail
             tableRows[4].SelectNodes("child::td")[1].InnerHtml = DateTime.Now.ToShortDateString().Split(" ")[0];
 
             return html.DocumentNode.InnerHtml;
+        }
+
+        void Send()
+        {
+            //SmtpClient setup
+            string host = ConfigurationManager.AppSettings.Get("host") ?? "";
+            string mailId = ConfigurationManager.AppSettings.Get("mailId") ?? "";
+            string pwd = ConfigurationManager.AppSettings.Get("pwd") ?? "";
+            SetSmtpClient(host, mailId, pwd);
+
+            //MailMessage setup
+            string[] recipients = ConfigurationManager.AppSettings.Get("recipients")?.Split(',') ?? [];
+            SetMailMessage(mailId, recipients, reportPath);
+            smtp.Send(msg);
+            msg.Dispose();
+            smtp.Dispose();
         }
     }
 }
