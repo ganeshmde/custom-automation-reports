@@ -17,14 +17,16 @@ namespace CustomExtentReport.Report
         ExtentReports extent;
         List<TestFeature> features;
         public TestResult testResult;
-        string allureResultsDirectory;
-        public string reportPath, reportsDirectory;
+        readonly string allureResultsDirectory;
+        public string reportPath = "", reportsDirectory = "";
         bool stopProgress = false;
 
         public Extent()
         {
-            allureResultsDirectory = ConfigurationManager.AppSettings.Get("allure-results");
+            allureResultsDirectory = ConfigurationManager.AppSettings.Get("allure-results") ?? "";
             extent = new ExtentReports();
+            features = [];
+            testResult = new();
         }
 
         #region Generate report
@@ -96,12 +98,12 @@ namespace CustomExtentReport.Report
             {
                 try
                 {
-                    int time = 100;
+                    int time = 200;
                     bool isSet = false;
                     for (int i = 0; i <= time && (!stopProgress); i++)
                     {
                         progress.Report((double)i / time);
-                        Thread.Sleep(40);
+                        Thread.Sleep(20);
                         if (features != default && !isSet)
                         {
                             time += features.Count();
@@ -109,10 +111,8 @@ namespace CustomExtentReport.Report
                         }
                     }
                 }
-                catch (Exception)
-                {
-                    progress.Dispose();
-                }
+                catch { }
+                progress.Dispose();
                 ClearLine();
                 Console.ResetColor();
             }
@@ -179,7 +179,7 @@ namespace CustomExtentReport.Report
         #region Report Setup
         void ImplementReport()
         {
-            string projectPath = new Uri(Path.GetDirectoryName(Assembly.GetCallingAssembly().CodeBase)).LocalPath;
+            string projectPath = new Uri(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? "").LocalPath;
             reportsDirectory = projectPath + "\\reports\\";
             Directory.CreateDirectory(reportsDirectory);
             var sparkReporter = new ExtentSparkReporter(reportsDirectory + "index.html");
@@ -288,7 +288,7 @@ namespace CustomExtentReport.Report
         /// </maxmary>
         /// <param name="imageName"></param>
         /// <returns></returns>
-        Media GetScreenshot(string imageName)
+        Media? GetScreenshot(string imageName)
         {
             if (imageName != default)
             {
