@@ -39,8 +39,6 @@ namespace CustomExtentReport.Mail
                     WriteColoredLine(e.Message, ConsoleColor.DarkRed);
                 }
             }
-
-            this.reportPath = reportPath;
         }
 
         void WriteColoredLine(string text, ConsoleColor color, bool resetColor = true)
@@ -59,25 +57,27 @@ namespace CustomExtentReport.Mail
         }
 
 
-        void SetSmtpClient(string host, string mailId, string pwd)
+        void SetSmtpClient(string mailId, string pwd)
         {
             smtp.Timeout = int.MaxValue;
-            smtp.Host = host;
+            smtp.Host = "smtp.mailgun.org";
             smtp.Port = 587;
             smtp.Credentials = new System.Net.NetworkCredential(mailId, pwd);
         }
 
-        void SetMailMessage(string mailId, string[] recipients, string reportPath)
+        void SetMailMessage(string mailId)
         {
             msg.Subject = "Automation testcases result";
             msg.IsBodyHtml = true;
             msg.Body = GetHtmlText();
             msg.From = new MailAddress(mailId);
-            AttachReportAsZipFile();
+            string[] recipients = ConfigurationManager.AppSettings.Get("recipients")?.Split(',') ?? [];
+            recipients = recipients.Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).Order().ToArray();
             foreach (var r in recipients)
             {
-                msg.To.Add(r.Trim());
+                msg.To.Add(r);
             }
+            AttachReportAsZipFile();
         }
 
         void AttachReportAsZipFile()
@@ -113,15 +113,10 @@ namespace CustomExtentReport.Mail
 
         void Send()
         {
-            //SmtpClient setup
-            string host = ConfigurationManager.AppSettings.Get("host") ?? "";
             string mailId = ConfigurationManager.AppSettings.Get("mailId") ?? "";
             string pwd = ConfigurationManager.AppSettings.Get("pwd") ?? "";
-            SetSmtpClient(host, mailId, pwd);
-
-            //MailMessage setup
-            string[] recipients = ConfigurationManager.AppSettings.Get("recipients")?.Split(',') ?? [];
-            SetMailMessage(mailId, recipients, reportPath);
+            SetSmtpClient(mailId, pwd);
+            SetMailMessage(mailId);
             smtp.Send(msg);
             msg.Dispose();
             smtp.Dispose();
