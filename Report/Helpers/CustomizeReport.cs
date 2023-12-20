@@ -77,7 +77,6 @@ namespace CustomExtentReport.Report.Helpers
                 HtmlNode featureDetail = item.SelectSingleNode("child::div[@class='test-detail']");
                 HtmlNode featureInfo = item.SelectSingleNode("descendant::div[@class='info']");
                 ChangeTimeInFeatureInfo(featureDetail, featureInfo, features[i]);
-
                 HtmlNode[] scenarios = item.SelectNodes("descendant::div[@class='card']").ToArray();
                 AddDurationToScenarioTitle(scenarios, features[i]);
             }
@@ -101,12 +100,27 @@ namespace CustomExtentReport.Report.Helpers
             spanElements.ElementAt(0).InnerHtml = startDateTime.ToLongTimeString();
             spanElements.ElementAt(1).InnerHtml = duration;
 
+            //Add pass and fail count
+            var countInfo = html.CreateElement("span");
+            var passSpan = html.CreateElement("span");
+            passSpan.SetAttributeValue("class", "badge pass-bg");
+            passSpan.SetAttributeValue("style", "letter-spacing: 1px; color: white; margin-left: 4px; border-radius: 3px;");
+            int passedScenarios = feature.Scenarios.Sum(x => x.Status == "passed" ? 1 : 0);
+            passSpan.InnerHtml = passedScenarios.ToString();
+            var failSpan = passSpan.Clone();
+            passSpan.SetAttributeValue("class", "badge fail-bg");
+            failSpan.InnerHtml = (feature.Scenarios.Count - passedScenarios).ToString();
+            countInfo.AppendChild(passSpan);
+            countInfo.AppendChild(failSpan);
+
             //Info
             var infoSpans = info.SelectNodes("child::span");
             infoSpans[0].InnerHtml = startDateTime.ToShortDateString() + " " + startDateTime.ToLongTimeString();
             infoSpans[1].InnerHtml = endDateTime.ToShortDateString() + " " + endDateTime.ToLongTimeString();
             infoSpans[2].InnerHtml = duration;
             infoSpans[3].Remove();
+            infoSpans[2].ParentNode.InsertAfter(countInfo, infoSpans[2]);
+            infoSpans[0].ParentNode.ChildNodes.Where(x => x.Name == "#text" && x.InnerHtml.Contains("dot")).FirstOrDefault()?.Remove();
         }
 
         void AddDurationToScenarioTitle(HtmlNode[] scenarioNodes, TestFeature feature)
