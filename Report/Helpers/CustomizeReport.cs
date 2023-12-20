@@ -101,17 +101,14 @@ namespace CustomExtentReport.Report.Helpers
             spanElements.ElementAt(1).InnerHtml = duration;
 
             //Add pass and fail count
-            var countInfo = html.CreateElement("span");
             var passSpan = html.CreateElement("span");
             passSpan.SetAttributeValue("class", "badge pass-bg");
             passSpan.SetAttributeValue("style", "letter-spacing: 1px; color: white; margin-left: 4px; border-radius: 3px;");
             int passedScenarios = feature.Scenarios.Sum(x => x.Status == "passed" ? 1 : 0);
             passSpan.InnerHtml = passedScenarios.ToString();
             var failSpan = passSpan.Clone();
-            passSpan.SetAttributeValue("class", "badge fail-bg");
+            failSpan.SetAttributeValue("class", "badge fail-bg");
             failSpan.InnerHtml = (feature.Scenarios.Count - passedScenarios).ToString();
-            countInfo.AppendChild(passSpan);
-            countInfo.AppendChild(failSpan);
 
             //Info
             var infoSpans = info.SelectNodes("child::span");
@@ -119,7 +116,8 @@ namespace CustomExtentReport.Report.Helpers
             infoSpans[1].InnerHtml = endDateTime.ToShortDateString() + " " + endDateTime.ToLongTimeString();
             infoSpans[2].InnerHtml = duration;
             infoSpans[3].Remove();
-            infoSpans[2].ParentNode.InsertAfter(countInfo, infoSpans[2]);
+            infoSpans[1].ParentNode.InsertAfter(failSpan, infoSpans[1]);
+            infoSpans[1].ParentNode.InsertAfter(passSpan, infoSpans[1]);
             infoSpans[0].ParentNode.ChildNodes.Where(x => x.Name == "#text" && x.InnerHtml.Contains("dot")).FirstOrDefault()?.Remove();
         }
 
